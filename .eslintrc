@@ -1,0 +1,24 @@
+{
+  "extends": "salt-typescript",
+  "parserOptions": {
+    "project": "tsconfig.json"
+  },
+  "ignorePatterns": ["./database.js"],
+  "rules": {
+    "import/prefer-default-export": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never",
+        "": "never"
+      }
+    ],
+    "import/no-import-module-exports": "off",
+    "import/no-extraneous-dependencies": "off",
+    "no-console": "off"
+  }
+}

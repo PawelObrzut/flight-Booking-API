@@ -73,6 +73,28 @@ const db = new sqlite3.Database(DBSOURCE, error => {
       ]);
     });
   });
+
+  db.run(`CREATE TABLE Bookings (
+    booking_id VARCHAR(255),
+    user_id INTEGER REFERENCES Users(user_id),
+    flight_id VARCHAR(255),
+    departureDestination VARCHAR(255),
+    arrivalDestination VARCHAR(255),
+    departureAt TIMESTAMP,
+    arrivalAt TIMESTAMP,
+    adults INTEGER,
+    children INTEGER,
+    total_price DECIMAL
+  )`);
+
+  db.run(`CREATE TABLE Users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255),
+    last_name VARCHAR(255),
+    email VARCHAR(255)
+  )`);
+
+  db.close();
 });
 
 module.exports = db;

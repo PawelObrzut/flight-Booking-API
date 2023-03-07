@@ -32,6 +32,7 @@ GET:
 - SQLite3
 - Typescript
 - RegEx
+- UUID
 
 ***
 

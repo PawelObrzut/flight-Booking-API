@@ -8,5 +8,5 @@
     "strict": true,                                      /* Enable all strict type-checking options. */                    /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
-  "include": ["app.ts", "./routes/**/*.ts", "database.js"],
+  "include": ["app.ts", "database.js", "./routes/**/*.ts", "./utils/*.ts"],
 }

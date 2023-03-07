@@ -1,11 +1,5 @@
 import express, { Request, Response } from 'express';
-
-const pkg = require('sqlite3');
-
-const { verbose } = pkg;
-const sqlite3 = verbose();
-const DBSOURCE = 'db.sqlite';
-const db = new sqlite3.Database(DBSOURCE);
+import db from '../../utils/utils';
 
 const router = express.Router();
 

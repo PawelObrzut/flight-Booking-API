@@ -4,6 +4,7 @@ An API for booking flights where all data is stored in sqlite3 database and is o
 
 Server is built using Node-Express that serves these **endpoints**:
 
+GET:
 - /api/flights
     - returns a list of all available flights
 - /api/flights/:id

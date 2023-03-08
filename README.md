@@ -4,7 +4,7 @@ An API for booking flights where all data is stored in sqlite3 database and is o
 
 Server is built using Node-Express that serves these **endpoints**:
 
-GET:
+FLIGHTS-GET:
 - /api/flights
     - returns a list of all available flights
 - /api/flights/:id
@@ -19,9 +19,23 @@ GET:
 - /api/flights/from/:departure/to/:arrival/price-range/:minPrice/:maxPrice
     - returns a list of flights between given destinations and specific times
         - you may use decimals to query this endpoint
-- /api/flights//from/:departure/to/:arrival/layover/priceRange/:minPrice/:maxPrice
+- /api/flights/from/:departure/to/:arrival/layover/priceRange/:minPrice/:maxPrice
     - returns a list of flights between given destinations and specific times with one layover
         - you may use decimals to query this endpoint
+
+BOOKINGS-GET:
+- /api/bookings/
+    - return a list of all bookings for an authenticated user
+- /api/bookings/:id
+    - returns details of a specific booking 
+
+BOOKINGS-POST:
+- /api/bookings/
+    - creates an entry in DB with booking details, updates Itinerary and returns booking confirmation
+
+USER
+- /user/login
+- /user/register
 
 ***
 
@@ -33,6 +47,8 @@ GET:
 - Typescript
 - RegEx
 - UUID
+- Dot.env
+- Passport-local
 
 ***
 

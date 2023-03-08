@@ -91,7 +91,14 @@ const db = new sqlite3.Database(DBSOURCE, error => {
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255),
     last_name VARCHAR(255),
-    email VARCHAR(255)
+    email VARCHAR(255),
+    password VARCHAR(255)
+  )`);
+
+  db.run(`CREATE TABLE RefreshTokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES Users(user_id),
+    refresh_token VARCHAR(255)
   )`);
 
   db.close();

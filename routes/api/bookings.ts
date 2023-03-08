@@ -1,16 +1,41 @@
 /* eslint-disable consistent-return */
 import express, { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import db from '../../utils/utils';
+import db from '../../utils/connectDB';
 
 const router = express.Router();
+
+router.get('/', (req: Request, res: Response) => {
+  db.all(`
+    SELECT * FROM Bookings WHERE user_id = 202
+  `, [], (err: Error | null, rows: any) => {
+    if (err) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    return res.status(500).json(rows);
+  });
+});
+
+router.get('/:id', (req: Request, res: Response) => {
+  db.get(`
+    SELECT * FROM Bookings WHERE booking_id = ?
+  `, [req.params.id], (err: Error | null, row: any) => {
+    if (err) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    if (!row) {
+      return res.status(404).json({ message: 'Booking with given ID not found' });
+    }
+    return res.status(200).json(row);
+  });
+});
 
 router.post('/', (req: Request, res: Response) => {
   const {
     flight_id: flightId, adults, children, user_id: userId,
   } = req.body;
 
-  if (!flightId || !adults) {
+  if (!flightId || !adults || !userId) {
     return res.status(400).json({ message: 'Provide all the details' });
   }
 
@@ -57,7 +82,7 @@ router.post('/', (req: Request, res: Response) => {
       WHERE flight_id = ?
     `, [updatedAvailableSeats, flightId], (error: Error | null) => {
       if (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error!' });
       }
     });
 

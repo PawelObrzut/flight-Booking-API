@@ -2,3 +2,4 @@ node_modules
 dist
 db.sqlite
 HTTP.bookings.rest
+.env

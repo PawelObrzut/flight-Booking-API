@@ -1,5 +1,11 @@
 import express, { Request, Response } from 'express';
 import passport from 'passport';
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+
+dotenv.config();
+const privateKey = process.env.ACCESS_TOKEN_SECRET;
+const refreshKey = process.env.REFRESH_TOKEN_SECRET;
 
 const router = express.Router();
 
@@ -13,8 +19,12 @@ router.post('/register', passport.authenticate('registerUser', { session: false 
 });
 
 router.post('/login', passport.authenticate('loginUser', { session: false }), (req:Request, res: Response) => {
-  const message = 'success logging in';
-  return res.status(200).json({ message });
+  if (!privateKey || !req.user) {
+    return 'Error, unable to issue a valid token';
+  }
+
+  const token = jwt.sign(req.user, privateKey, { expiresIn: '5m' });
+  return res.status(203).cookie('token', token).send('token!');
 });
 
 export default router;

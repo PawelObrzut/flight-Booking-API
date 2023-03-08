@@ -1,11 +1,13 @@
 /* eslint-disable consistent-return */
 import express, { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import passport from 'passport';
 import db from '../../utils/connectDB';
+import '../../middlewares/passport-jwt-authenticate';
 
 const router = express.Router();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', passport.authenticate('authenticateJWT', { session: false }), (req: Request, res: Response) => {
   db.all(`
     SELECT * FROM Bookings WHERE user_id = 202
   `, [], (err: Error | null, rows: any) => {
@@ -21,7 +23,7 @@ router.get('/:id', (req: Request, res: Response) => {
     SELECT * FROM Bookings WHERE booking_id = ?
   `, [req.params.id], (err: Error | null, row: any) => {
     if (err) {
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal server error!' });
     }
     if (!row) {
       return res.status(404).json({ message: 'Booking with given ID not found' });

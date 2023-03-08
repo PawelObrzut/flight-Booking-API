@@ -49,6 +49,8 @@ USER
 - UUID
 - Dot.env
 - Passport-local
+- Passport-JWT
+- jsonWebTokens
 
 ***
 

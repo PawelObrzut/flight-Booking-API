@@ -3,6 +3,7 @@ import * as PassportLocal from 'passport-local';
 import passport from 'passport';
 import bcrypt from 'bcrypt';
 import db from '../utils/connectDB';
+import { UserInterface } from '../types/types';
 
 passport.use(
   'registerUser',
@@ -14,7 +15,7 @@ passport.use(
     (req, email, password, done) => {
       try {
         const hashPassword = bcrypt.hashSync(password, 10);
-        db.get('SELECT * FROM Users WHERE email = ?', [email], (err: Error | null, row: any) => {
+        db.get('SELECT * FROM Users WHERE email = ?', [email], (err: Error | null, row: UserInterface) => {
           if (err) {
             return done(Error);
           }

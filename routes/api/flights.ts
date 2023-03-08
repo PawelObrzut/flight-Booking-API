@@ -1,30 +1,18 @@
 import express, { Request, Response } from 'express';
 import db from '../../utils/connectDB';
+import { FlightInterface, FlightLayoverInterface } from '../../types/types';
 
 const router = express.Router();
-
-interface InterfaceBDRow {
-  flight_id: string,
-  route_id: string,
-  departureAt: string,
-  arrivalAt: string,
-  availableSeats: number,
-  currency: string,
-  adult_price: number,
-  child_price: number,
-  departureDestination: string,
-  arrivalDestination: string
-}
 
 router.get('/', (req: Request, res: Response) => {
   db.all(`
     SELECT * FROM Itineraries
     INNER JOIN Routes ON Itineraries.route_id=Routes.route_id
-    `, [], (err: Error | null, rows: InterfaceBDRow[]) => {
+    `, [], (err: Error | null, flights: FlightInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
-    return res.status(200).json(rows);
+    return res.status(200).json(flights);
   });
 });
 
@@ -33,22 +21,22 @@ router.get('/:id', (req: Request, res: Response) => {
     SELECT * FROM Itineraries
     INNER JOIN Routes ON Itineraries.route_id=Routes.route_id
     WHERE Itineraries.flight_id = ?
-  `, [req.params.id], (err: Error | null, row: InterfaceBDRow) => {
+  `, [req.params.id], (err: Error | null, flight: FlightInterface) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
-    if (!row) {
+    if (!flight) {
       return res.status(404).json({ message: 'Flight with given ID not found' });
     }
-    return res.status(200).json(row);
+    return res.status(200).json(flight);
   });
 });
 
 // eslint-disable-next-line consistent-return
-router.get('/leave-at/:departure/arrive-at/:arrival', (req: Request, res: Response) => {
+router.get('/leave-at/:departureAt/arrive-at/:arrivalAt', (req: Request, res: Response) => {
   const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?([+-]\d{2}:?\d{2}|Z)$/;
 
-  if (!iso8601Regex.test(req.params.departure) || !iso8601Regex.test(req.params.arrival)) {
+  if (!iso8601Regex.test(req.params.departureAt) || !iso8601Regex.test(req.params.arrivalAt)) {
     return res.status(400).json({ error: 'Invalid date-time format. Please use ISO 8601 format.' });
   }
 
@@ -57,7 +45,7 @@ router.get('/leave-at/:departure/arrive-at/:arrival', (req: Request, res: Respon
   INNER JOIN Routes ON Itineraries.route_id=Routes.route_id
   WHERE datetime(Itineraries.departureAt) > datetime(?)
   AND datetime(Itineraries.arrivalAt) < datetime(?)
-  `, [req.params.departure, req.params.arrival], (err: Error | null, rows: InterfaceBDRow[]) => {
+  `, [req.params.departureAt, req.params.arrivalAt], (err: Error | null, rows: FlightInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
@@ -68,24 +56,24 @@ router.get('/leave-at/:departure/arrive-at/:arrival', (req: Request, res: Respon
   });
 });
 
-router.get('/from/:departure/to/:arrival', (req: Request, res: Response) => {
+router.get('/from/:departureDestination/to/:arrivalDestination', (req: Request, res: Response) => {
   db.all(`
     SELECT * FROM Itineraries
     INNER JOIN Routes ON Itineraries.route_id=Routes.route_id
     WHERE Routes.departureDestination = ?
     AND Routes.arrivalDestination = ?
-  `, [req.params.departure, req.params.arrival], (err: Error | null, rows: InterfaceBDRow[]) => {
+  `, [req.params.departureDestination, req.params.arrivalDestination], (err: Error | null, flights: FlightInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
-    if (rows.length === 0) {
+    if (flights.length === 0) {
       return res.status(404).json({ message: 'Flights not found' });
     }
-    return res.status(200).json(rows);
+    return res.status(200).json(flights);
   });
 });
 
-router.get('/from/:departure/to/:arrival/layover', (req: Request, res: Response) => {
+router.get('/from/:departureDestination/to/:arrivalDestination/layover', (req: Request, res: Response) => {
   db.all(`
   SELECT
     I1.flight_id AS 'flight_id_1', 
@@ -112,7 +100,7 @@ router.get('/from/:departure/to/:arrival/layover', (req: Request, res: Response)
     INNER JOIN Itineraries AS I2 ON I2.route_id = R2.route_id
   WHERE 
     I1.arrivalAt < I2.departureAt
-  `, [req.params.departure, req.params.arrival], (err: Error | null, rows: InterfaceBDRow[]) => {
+  `, [req.params.departureDestination, req.params.arrivalDestination], (err: Error | null, rows: FlightLayoverInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
@@ -120,7 +108,7 @@ router.get('/from/:departure/to/:arrival/layover', (req: Request, res: Response)
   });
 });
 
-router.get('/from/:departure/to/:arrival/price-range/:minPrice/:maxPrice', (req: Request, res: Response) => {
+router.get('/from/:departureDestination/to/:arrivalDestination/price-range/:minPrice/:maxPrice', (req: Request, res: Response) => {
   db.all(`
     SELECT * FROM Itineraries
     INNER JOIN Routes ON Itineraries.route_id=Routes.route_id
@@ -128,15 +116,15 @@ router.get('/from/:departure/to/:arrival/price-range/:minPrice/:maxPrice', (req:
     AND Routes.arrivalDestination = ?
     AND Itineraries.adult_price > ?
     AND Itineraries.adult_price < ?
-  `, [req.params.departure, req.params.arrival, req.params.minPrice, req.params.maxPrice], (err: Error | null, rows: any[]) => {
+  `, [req.params.departureDestination, req.params.arrivalDestination, req.params.minPrice, req.params.maxPrice], (err: Error | null, flights: FlightInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
-    return res.status(200).json(rows);
+    return res.status(200).json(flights);
   });
 });
 
-router.get('/from/:departure/to/:arrival/layover/priceRange/:minPrice/:maxPrice', (req: Request, res: Response) => {
+router.get('/from/:departureDestination/to/:arrivalDestination/layover/priceRange/:minPrice/:maxPrice', (req: Request, res: Response) => {
   db.all(`
   SELECT
     I1.flight_id AS 'flight_id_1', 
@@ -165,11 +153,11 @@ router.get('/from/:departure/to/:arrival/layover/priceRange/:minPrice/:maxPrice'
     I1.arrivalAt < I2.departureAt
   AND I1.adult_price + I2.adult_price > ?
   AND I1.adult_price + I2.adult_price < ?
-  `, [req.params.departure, req.params.arrival, +req.params.minPrice, +req.params.maxPrice], (err: Error | null, rows: any[]) => {
+  `, [req.params.departureDestination, req.params.arrivalDestination, +req.params.minPrice, +req.params.maxPrice], (err: Error | null, flights: FlightLayoverInterface[]) => {
     if (err) {
       return res.status(500).json({ error: 'Internal server error' });
     }
-    return res.status(200).json(rows);
+    return res.status(200).json(flights);
   });
 });
 

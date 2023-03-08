@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 dotenv.config();
 const privateKey = process.env.ACCESS_TOKEN_SECRET;
-const refreshKey = process.env.REFRESH_TOKEN_SECRET;
+// const refreshKey = process.env.REFRESH_TOKEN_SECRET;
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post('/login', passport.authenticate('loginUser', { session: false }), (r
   }
 
   const token = jwt.sign(req.user, privateKey, { expiresIn: '5m' });
-  return res.status(203).cookie('token', token).send('token!');
+  return res.status(203).cookie('token', token).json({ message: 'success on logging in' });
 });
 
 export default router;

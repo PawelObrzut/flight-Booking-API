@@ -1,3 +1,11 @@
+import { Request } from 'express';
+
+export interface RequestUser extends Request {
+  user_id?: number,
+  email?: string,
+  password?: string,
+}
+
 export interface UserInterface {
   user_id: number,
   name: string,
@@ -64,4 +72,8 @@ export interface BookingInterface {
   adults: number,
   children?: number,
   total_price: number
+}
+
+export interface TokenExistsResult {
+  result: number
 }

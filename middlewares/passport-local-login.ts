@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 import * as PassportLocal from 'passport-local';
 import passport from 'passport';
@@ -7,12 +8,11 @@ import { UserInterface } from '../types/types';
 
 /*
   The goal of serialising a User is not to leak sensitive information.
-  It is suppose to run just before *** return done(null, user);*** but for some reason it does not
-  My guess is that is has something to do with req object itself or its corresponding type
+  It is suppose to run right after *** return done(null, user);*** but for some reason it does not
+  In the previous project I used the same library and it worked. That puzzles me a lot.
 */
 passport.serializeUser((user: any, done) => {
-  console.log('SERIALIZE!', user);
-  // eslint-disable-next-line no-param-reassign
+  console.log('SERIALIZE!', user); // never gets to the console
   delete user.password;
   return done(null, user);
 });
@@ -36,7 +36,7 @@ passport.use(
           try {
             bcrypt.compare(password, user.password, (error, result) => {
               if (result) {
-                console.log('login', result, 'user', user);
+                delete user.password;
                 return done(null, user);
               }
               return done(null, false);

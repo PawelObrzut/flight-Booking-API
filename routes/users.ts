@@ -24,54 +24,23 @@ router.post('/login', passport.authenticate('loginUser', { session: false }), (r
     return 'Error, unable to issue a valid token';
   }
 
-  const expirationTime = new Date(Date.now() + 5 * 60 * 1000).toISOString();
   const accessToken = jwt.sign(req.user, accessKey, { expiresIn: '5m' });
+  const refreshToken = jwt.sign(req.user, refreshKey);
 
-  db.get(`
-    SELECT * FROM RefreshTokens
-    WHERE user_id = ?
-    LIMIT 1
-  `, [userId], (error: Error | null, token: any) => {
+  db.run(`
+    INSERT INTO RefreshTokens (
+      user_id, refresh_token
+    ) VALUES (
+      ?, ?
+    )
+  `, [userId, refreshToken], (error: Error | null) => {
     if (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }
-    if (!token) {
-      console.log('debbug:: no refreshToken');
-      const user = req.user as UserInterface;
-      const refreshToken = jwt.sign(user, refreshKey);
-      db.run(`
-      INSERT INTO RefreshTokens (
-        user_id, refresh_token
-      ) VALUES (
-        ?, ?
-      );
-
-      INSERT INTO AccessTokens (
-        user_id, access_token, refresh_token_id, expiration_time
-      ) VALUES (
-        ?, ?, ?, ?
-      );
-    `, [user.user_id, refreshToken, user.user_id, accessToken, 1, expirationTime], (err: Error | null) => {
-        if (err) {
-          return res.status(500).json({ message: 'Internal server error' });
-        }
-
-        return res
-          .status(203)
-          .cookie('accessToken', accessToken)
-          .cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: true,
-          })
-          .json({ message: 'Success on logging in' });
-      });
-    }
-
     return res
       .status(203)
       .cookie('accessToken', accessToken)
-      .cookie('refreshToken', token, {
+      .cookie('refreshToken', refreshToken, {
         httpOnly: true,
         sameSite: 'strict',
         secure: true,
@@ -80,10 +49,6 @@ router.post('/login', passport.authenticate('loginUser', { session: false }), (r
   });
 });
 
-/*
- * post /refreshToken works but it is defective in its principles.
- * expired tokens will not be refreshed. I guess I have to validate it agains access token secret.
-*/
 router.post('/refreshToken', (req: Request, res: Response) => {
   const { token } = req.body;
 
@@ -93,32 +58,20 @@ router.post('/refreshToken', (req: Request, res: Response) => {
   db.get(`
     SELECT EXISTS(SELECT 1 FROM RefreshTokens WHERE refresh_token = ?) AS result;
   `, [token], (error: Error | null, result: TokenExistsResult) => {
-    if (error || !accessKey) {
+    if (error || !accessKey || !refreshKey) {
       return res.status(500).json({ message: 'Internal server error' });
     }
     if (!result.result) {
       return res.status(403).json({ message: 'Token revoked' });
     }
 
-    jwt.verify(token, accessKey, (err: any, decode: any) => {
+    jwt.verify(token, refreshKey, (err: any, decode: any) => {
       if (err) {
         return res.sendStatus(403);
       }
-
       const { iat, exp, ...userData } = decode;
       const newToken = jwt.sign(userData, accessKey, { expiresIn: '5m' });
-
-      db.run(`
-      INSERT INTO RefreshTokens (
-        user_id, refresh_token
-      ) VALUES (
-        ?, ?
-      )`, [decode.user_id, newToken], (dbErr: Error | null) => {
-        if (dbErr) {
-          return res.status(500).json({ message: 'Internal server error' });
-        }
-        return res.status(203).cookie('token', newToken).json({ message: 'Token refreshed' });
-      });
+      return res.status(203).cookie('token', newToken).json({ message: 'Token refreshed' });
     });
   });
 });

@@ -95,6 +95,14 @@ const db = new sqlite3.Database(DBSOURCE, error => {
     password VARCHAR(255)
   )`);
 
+  db.run(`CREATE TABLE AccessTokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES Users(user_id),
+    access_token VARCHAR(255),
+    refresh_token_id INTEGER REFERENCES RefreshTokens(id),
+    expiration_time TIMESTAMP
+  )`);
+
   db.run(`CREATE TABLE RefreshTokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER REFERENCES Users(user_id),

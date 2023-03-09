@@ -111,6 +111,15 @@ This will create db.sqlite database with 5 tables:
 > 4. Routes - containing flight routes
 > 5. Users - empty table for storing users credentials
 
+You would also need to create an .env file with ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET variables.
+Enter node in your terminal and type
+```bash
+node
+$ require('crypto').randomBytes(64).toString('hex')
+```
+it will generate token secrets. Paste them in .env file accordingly as ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET values.
+
+***
 
 In order to run a server use build and run scripts:
 

@@ -12,10 +12,6 @@ const refreshKey = process.env.REFRESH_TOKEN_SECRET;
 
 const router = express.Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.send('users endpoint yeeah');
-});
-
 router.post('/register', passport.authenticate('registerUser', { session: false }), (req: Request, res: Response) => res.status(203).json({ message: 'User registered' }));
 
 router.post('/login', passport.authenticate('loginUser', { session: false }), (req: RequestUser, res: Response) => {

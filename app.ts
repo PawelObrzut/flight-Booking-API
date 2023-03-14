@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import passport from 'passport';
+import cors from 'cors';
 import flightsRouter from './routes/api/flights';
 import bookingsRouter from './routes/api/bookings';
 import usersRouter from './routes/users';
@@ -9,6 +10,7 @@ import './middlewares/passport-local-register';
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
+app.use(cors());
 app.use(express.json());
 app.use(passport.initialize());
 app.use('/api/flights', flightsRouter);

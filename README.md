@@ -10,6 +10,7 @@ By integrating with our API, you can effortlessly manage your flight bookings an
 
 - Node
 - Express
+- Cors
 - SQLite3
 - Typescript
 - RegEx
